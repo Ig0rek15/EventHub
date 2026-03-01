@@ -1,7 +1,15 @@
-asgiref==3.11.1
 Django==4.2
-sqlparse==0.5.5
-tzdata==2025.3
+djangorestframework==3.15.1
 
-ipython
-django-debug-toolbar
+psycopg2-binary==2.9.9
+
+redis==5.0.4
+django-redis==5.4.0
+
+python-dotenv==1.0.1
+
+celery==5.3.6
+
+gunicorn==21.2.0
+
+Pillow==10.3.0
