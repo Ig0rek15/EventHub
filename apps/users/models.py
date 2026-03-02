@@ -6,6 +6,11 @@ from django.contrib.auth.models import (
 from django.db import models
 
 
+class UserRole(models.TextChoices):
+    USER = 'user', 'User'
+    ORGANIZER = 'organizer', 'Organizer'
+
+
 class UserManager(BaseUserManager):
 
     def create_user(self, email: str, password: str | None = None, **extra):
@@ -34,6 +39,12 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
+    role = models.CharField(
+        max_length=20,
+        choices=UserRole.choices,
+        default=UserRole.USER,
+    )
+
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
@@ -41,3 +52,34 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+
+
+class AuthProvider(models.TextChoices):
+    EMAIL = 'email', 'Email'
+    TELEGRAM = 'telegram', 'Telegram'
+
+
+class AuthIdentity(models.Model):
+
+    user = models.ForeignKey(
+        'users.User',
+        on_delete=models.CASCADE,
+        related_name='identities',
+    )
+
+    provider = models.CharField(
+        max_length=20,
+        choices=AuthProvider.choices,
+    )
+
+    provider_user_id = models.CharField(
+        max_length=255,
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = (
+            'provider',
+            'provider_user_id',
+        )
