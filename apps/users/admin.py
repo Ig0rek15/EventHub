@@ -1,65 +1,62 @@
-# from django.contrib import admin
-# from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.utils.translation import gettext_lazy as _
 
-# from .models import User
+from .models import User, AuthIdentity
 
 
-# @admin.register(User)
-# class UserAdmin(BaseUserAdmin):
+class AuthIdentityInline(admin.TabularInline):
+    model = AuthIdentity
+    extra = 0
+    readonly_fields = ('provider', 'provider_user_id', 'created_at')
+    can_delete = False
 
-#     ordering = ('email',)
-#     list_display = (
-#         'id',
-#         'email',
-#         'is_staff',
-#         'is_active',
-#         'is_superuser',
-#         'created_at',
-#     )
 
-#     search_fields = ('email',)
+@admin.register(User)
+class UserAdmin(BaseUserAdmin):
+    ordering = ('id',)
+    list_display = (
+        'id',
+        'email',
+        'is_staff',
+        'is_active',
+    )
 
-#     readonly_fields = ('created_at',)
+    fieldsets = (
+        (None, {'fields': ('email', 'password')}),
+        (_('Permissions'), {
+            'fields': (
+                'is_active',
+                'is_staff',
+                'is_superuser',
+                'groups',
+                'user_permissions',
+            ),
+        }),
+        (_('Important dates'), {'fields': ('last_login',)}),
+    )
 
-#     fieldsets = (
-#         (None, {'fields': ('email', 'password')}),
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('email', 'password1', 'password2'),
+        }),
+    )
 
-#         (
-#             'Permissions',
-#             {
-#                 'fields': (
-#                     'is_active',
-#                     'is_staff',
-#                     'is_superuser',
-#                     'groups',
-#                     'user_permissions',
-#                 )
-#             },
-#         ),
+    search_fields = ('email',)
+    readonly_fields = ('last_login',)
+    inlines = (AuthIdentityInline,)
 
-#         (
-#             'Important dates',
-#             {'fields': ('last_login', 'created_at')},
-#         ),
-#     )
 
-#     add_fieldsets = (
-#         (
-#             None,
-#             {
-#                 'classes': ('wide',),
-#                 'fields': (
-#                     'email',
-#                     'password1',
-#                     'password2',
-#                     'is_staff',
-#                     'is_superuser',
-#                 ),
-#             },
-#         ),
-#     )
-
-#     filter_horizontal = (
-#         'groups',
-#         'user_permissions',
-#     )
+@admin.register(AuthIdentity)
+class AuthIdentityAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'user',
+        'provider',
+        'provider_user_id',
+        'created_at',
+    )
+    search_fields = ('provider_user_id',)
+    list_filter = ('provider',)
+    readonly_fields = ('created_at',)
